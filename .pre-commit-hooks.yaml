@@ -1,0 +1,7 @@
+- id: sungai
+  name: sungai
+  entry: sungai
+  language: python
+  types: [python]
+  require_serial: true
+  description: 'Sungai is a directory tree rater.'
