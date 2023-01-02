@@ -1,0 +1,38 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v4.2.0"
+    hooks:
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-docstring-first
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-toml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/pycqa/isort
+    rev: "5.11.4"
+    hooks:
+      - id: isort
+  - repo: https://github.com/pycqa/flake8
+    rev: "6.0.0"
+    hooks:
+      - id: flake8
+  - repo: https://github.com/PyCQA/pylint
+    rev: "v2.15.9"
+    hooks:
+      - id: pylint
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: "6.1.1"
+    hooks:
+      - id: pydocstyle
+  - repo: https://github.com/PyCQA/pyflakes
+    rev: "3.0.1"
+    hooks:
+      - id: pyflakes
+  - repo: https://github.com/regebro/pyroma
+    rev: "4.1"
+    hooks:
+      - id: pyroma
+
