@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.2.0"
+    rev: "v4.3.0"
     hooks:
       - id: check-ast
       - id: check-builtin-literals
@@ -23,16 +23,13 @@ repos:
     rev: "v2.15.9"
     hooks:
       - id: pylint
+        exclude: tests/directory_tree
   - repo: https://github.com/pycqa/pydocstyle
     rev: "6.1.1"
     hooks:
       - id: pydocstyle
-  - repo: https://github.com/PyCQA/pyflakes
-    rev: "3.0.1"
-    hooks:
-      - id: pyflakes
+        exclude: tests/directory_tree
   - repo: https://github.com/regebro/pyroma
     rev: "4.1"
     hooks:
       - id: pyroma
-

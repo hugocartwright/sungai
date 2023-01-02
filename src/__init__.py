@@ -1,1 +1,6 @@
-VERSION=0.0.1
+"""
+Sungai.
+
+- Project URL: https://github.com/hugocartwright/sungai
+"""
+VERSION = "0.0.1"
