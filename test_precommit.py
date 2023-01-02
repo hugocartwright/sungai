@@ -1,0 +1,2 @@
+def crappy():
+    print("tests")
