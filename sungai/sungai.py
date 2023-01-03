@@ -13,7 +13,9 @@ def get_r2_ln(y_values):
     """Linear regression."""
     x_values = [math.log(i + 1) for i in range(len(y_values))]
 
-    return stats.linregress(x_values, y_values)
+    # slope, intercept, r, p, se = linregress(x, y)
+    slope, intercept, r_value, _, _ = stats.linregress(x_values, y_values)
+    return [slope, intercept, r_value * r_value]
 
 
 def nested_sum(nested_list):
@@ -69,22 +71,20 @@ class DirectoryRater():
         self.structure[-1].append(len(files))
         self.structure[-1].append(0)
 
-        print(self.structure)
         self.append_current_node(root)
 
     def append_current_node(self, root):
         """Append current node."""
-        print(self.structure[-1])
         y_values = [nested_sum([x]) for x in self.structure[-1]]
-        print(y_values)
-        self.nodes.append(
-            [
-                root,
-                nested_sum(self.structure[-1]),
-                # slope, intercept, r, p, se = linregress(x, y)
-                get_r2_ln(y_values)[2],
-            ]
-        )
+        y_values.sort(reverse=True)
+        if y_values != [0, 0]:
+            self.nodes.append(
+                [
+                    root,
+                    sum(y_values),
+                    get_r2_ln(y_values)[2],
+                ]
+            )
 
     def is_ignorable(self):
         """Directory or file is ignorable."""
@@ -101,51 +101,63 @@ class DirectoryRater():
         """
         for root, dirs, files in os.walk(self.target, topdown=False):
             if not self.is_ignorable():
-                if ".git/" not in root and "venv/" not in root:
-                    # self.check_is_symlink(root)
-                    self.get_structure(root, dirs, files)
-                    self.previous_dir = root
+                # self.check_is_symlink(root)
+                self.get_structure(root, dirs, files)
+            self.previous_dir = root
 
-    def score_nodes(self):
+    def score_nodes(self, root_score):
         """Score nodes."""
-        # b = self.min_score - 1.0
-        # y = ax + b
+        b_value = self.min_score - 1.0
+
+        max_x = root_score[1]
+        max_x = math.log(max_x + 1)
+
+        a_value = 1.0 / (max_x)
+
+        for i, node in enumerate(self.nodes):
+            # y = ax + b
+            score = node[2] - ((a_value * math.log(node[1] + 1)) + b_value)
+            self.nodes[i].append(score)
 
     def get_bad_nodes(self):
         """Get bad nodes."""
+        self.nodes = [x for x in self.nodes if x[3] < 0]
 
-    def add_bad_nodes_to_suggestions(self):
-        """Add bad nodes to suggestions."""
+        for node in self.nodes:
+            self.suggestions.append(
+                f"Score: {node[1]} - {node[2]} - {node[3]} - {node[0]}"
+            )
 
     def process_nodes(self):
         """Process the nodes after directory traversal."""
-        self.score_nodes()
+        root_score = self.nodes[-1]
+        self.score_nodes(root_score)
         self.nodes.sort(key=lambda node: node[3])
         self.get_bad_nodes()
-        self.add_bad_nodes_to_suggestions()
+        return root_score
 
-    def results_message(self, verbose):
+    def results_message(self, root_score, verbose):
         """Build results message."""
         prefix = "[sungai]"
-        message = f"{prefix} Target directory: {self.target}"
-        message += f"{prefix} Score: {self.nodes[-1][1]}"
-        message += f"{prefix} Errors: {len(self.suggestions)}"
+        message = f"{prefix} Target directory: {self.target}\r\n"
+        message += f"{prefix} Score: {root_score}\r\n"
+        message += f"{prefix} Errors: {len(self.suggestions)}\r\n"
 
         if len(self.suggestions) > 0:
-            message += f"{prefix} Suggested fixes:"
+            message += f"{prefix} Suggested fixes:\r\n"
             for suggestion in self.suggestions:
-                message += f"{prefix} - {suggestion}"
+                message += f"{prefix} - {suggestion}\r\n"
 
         if verbose and len(self.warnings) > 0:
-            message += f"{prefix} Warnings issued:"
+            message += f"{prefix} Warnings issued:\r\n"
             for warning in self.warnings:
-                message += f"{prefix} - {warning}"
+                message += f"{prefix} - {warning}\r\n"
 
         return message
 
     def run(self, verbose=False):
         """Run."""
         self.preprocess()
-        self.process_nodes()
-        print(self.results_message(verbose))
+        root_score = self.process_nodes()
+        print(self.results_message(root_score[2], verbose))
         return len(self.suggestions)
