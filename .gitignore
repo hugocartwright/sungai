@@ -1,5 +1,5 @@
 design/
-tests/directory_tree/
+tests/directory_tree/*
 
 .DS_Store
 
