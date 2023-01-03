@@ -1,0 +1,48 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v4.3.0"
+    hooks:
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-docstring-first
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-toml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/pycqa/isort
+    rev: "5.11.4"
+    hooks:
+      - id: isort
+  - repo: https://github.com/pycqa/flake8
+    rev: "6.0.0"
+    hooks:
+      - id: flake8
+  - repo: https://github.com/PyCQA/pylint
+    rev: "v2.15.9"
+    hooks:
+      - id: pylint
+        additional_dependencies: ["scipy==1.9.3"]
+        exclude: tests/directory_tree
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: "6.1.1"
+    hooks:
+      - id: pydocstyle
+        exclude: tests/directory_tree
+  - repo: https://github.com/regebro/pyroma
+    rev: "4.1"
+    hooks:
+      - id: pyroma
+  # - repo: local
+  #   hooks:
+  #     - id: sungai
+  #       name: sungai
+  #       entry: sungai
+  #       language: system
+  #       types: [python]
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.4
+    hooks:
+      - id: bandit
+        exclude: tests/
