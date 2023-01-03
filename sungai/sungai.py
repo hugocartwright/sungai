@@ -18,7 +18,9 @@ def get_r2_ln(y_values):
 
 def nested_sum(nested_list):
     """Sum of nested list."""
-    return sum(nested_list)
+    return sum(
+        nested_sum(x) if isinstance(x, list) else x for x in nested_list
+    )
 
 
 class DirectoryRater():
@@ -31,10 +33,9 @@ class DirectoryRater():
 
         self.suggestions = []
         self.nodes = []
-        self.skip = False
         self.warnings = []
         self.structure = []
-        # self.symlink = None
+        self.previous_dir = ""
 
     # def check_is_symlink(self, root):
     #     """Check directory is a symlink."""
@@ -46,29 +47,42 @@ class DirectoryRater():
 
     def get_structure(self, root, dirs, files):
         """Get the directory's structure."""
-
-    def check_unwanted_cases(self, root, dirs, files):
-        """Check for empty directories leaves and nodes."""
         if len(root) > 280:
             self.warnings.append(f"Target path too long: {root}")
         elif len(files) == 0:
             if len(dirs) == 0:
                 self.warnings.append(f"Empty leaf directory: {root}")
-                self.skip = True
             elif len(dirs) == 1:
                 self.warnings.append(f"Empty node directory: {root}")
         elif len(files) > 10000:
-            self.warnings.append(f"Too many files in single directory: {root}")
+            self.warnings.append(
+                f"Too many files in single directory: {root}"
+            )
+
+        if root not in self.previous_dir:
+            self.structure.append([])
+        else:
+            self.structure = self.structure[:-len(dirs)] + [
+                self.structure[-len(dirs):]
+            ]
+
+        self.structure[-1].append(len(files))
+        self.structure[-1].append(0)
+
+        print(self.structure)
+        self.append_current_node(root)
 
     def append_current_node(self, root):
         """Append current node."""
-        this_structure = self.structure[-2]
+        print(self.structure[-1])
+        y_values = [nested_sum([x]) for x in self.structure[-1]]
+        print(y_values)
         self.nodes.append(
             [
                 root,
-                nested_sum(this_structure),
+                nested_sum(self.structure[-1]),
                 # slope, intercept, r, p, se = linregress(x, y)
-                get_r2_ln(this_structure)[2],
+                get_r2_ln(y_values)[2],
             ]
         )
 
@@ -87,11 +101,10 @@ class DirectoryRater():
         """
         for root, dirs, files in os.walk(self.target, topdown=False):
             if not self.is_ignorable():
-                # self.check_is_symlink(root)
-                self.check_unwanted_cases(root, dirs, files)
-                if not self.skip:
+                if ".git/" not in root and "venv/" not in root:
+                    # self.check_is_symlink(root)
                     self.get_structure(root, dirs, files)
-                self.skip = False
+                    self.previous_dir = root
 
     def score_nodes(self):
         """Score nodes."""
