@@ -3,6 +3,7 @@ Sungai.
 
 - Project URL: https://github.com/hugocartwright/sungai
 """
+import tempfile
 import unittest
 
 from sungai.sungai import DirectoryRater, get_r2_ln, nested_sum
@@ -27,10 +28,17 @@ class TestUtils(unittest.TestCase):
 class TestDirectoryRater(unittest.TestCase):
     """Test DirectoryRater."""
 
+    def setUp(self):
+        """Create test directory tree."""
+        self.test_dir = tempfile.TemporaryFile()
+
+    def tearDown(self):
+        """Tear down test directory tree."""
+        self.test_dir.close()
+
     def test_get_structure(self):
         """Test get_structure method."""
         directory_rater = DirectoryRater("tests/directory_tree", 1.0)
-
         directory_rater.run(False)
 
         assert directory_rater.structure == [
