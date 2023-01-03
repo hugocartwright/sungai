@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup_args = dict(
     name='sungai',
-    python_requires='>3.11.0',
+    python_requires='>3.10.0',
     version="0.0.1",
     description='Sungai is a directory rating tool',
     license='MIT License',
@@ -32,6 +32,11 @@ setup_args = dict(
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: MIT License',
     ],
+    entry_points={
+        'console_scripts': [
+            'sungai = sungai:run_sungai',
+        ]
+    }
 )
 
 if __name__ == '__main__':

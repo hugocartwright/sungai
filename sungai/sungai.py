@@ -1,8 +1,10 @@
-"""Sungai."""
-import argparse
+"""
+Sungai.
+
+- Project URL: https://github.com/hugocartwright/sungai
+"""
 import math
 import os
-import sys
 
 from scipy import stats
 
@@ -134,28 +136,3 @@ class DirectoryRater():
         self.process_nodes()
         print(self.results_message(verbose))
         return len(self.suggestions)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Sungai"
-    )
-    parser.add_argument(
-        "target",
-        type=str,
-        help="The path to the target directory.",
-    )
-    parser.add_argument(
-        "min_score",
-        type=float,
-        help="The minimum score to pass.",
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="Add if you want verbose output.",
-    )
-    args = parser.parse_args()
-    directory_rater = DirectoryRater(args.target, args.min_score)
-    sys.exit(directory_rater.run(args.verbose))
