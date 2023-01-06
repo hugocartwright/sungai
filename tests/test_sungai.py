@@ -62,6 +62,8 @@ class TestDirectoryRater(unittest.TestCase):
                 ], 6, 0
             ]
         ]
+        print(directory_rater.structure)
+        print(correct_structure)
         assert directory_rater.structure == correct_structure
 
     def test_score_nodes(self):
