@@ -1,2 +1,4 @@
+coverage==7.0.4
 pre-commit==2.21.0
 scipy==1.9.3
+tox==4.2.6
