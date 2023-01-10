@@ -8,7 +8,7 @@ import sys
 
 from .sungai import DirectoryRater
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 
 def run_sungai():
@@ -22,14 +22,18 @@ def run_sungai():
         help="The path to the target directory.",
     )
     parser.add_argument(
-        "min_score",
+        "--min_score",
         type=float,
         help="The minimum score to pass.",
+        required=False,
+        default=None,
     )
     parser.add_argument(
         "--verbose",
         action="store_true",
         help="Add if you want verbose output.",
+        required=False,
+        default=False,
     )
     args = parser.parse_args()
 
@@ -39,7 +43,5 @@ def run_sungai():
             args.min_score,
         )
         sys.exit(directory_rater.run(args.verbose))
-        sys.exit(directory_rater.run(False))
-
     except KeyboardInterrupt:
         sys.exit(1)

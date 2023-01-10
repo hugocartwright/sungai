@@ -1,5 +1,8 @@
-"""PyPi package setup instructions."""
+"""
+Sungai.
 
+- Project URL: https://github.com/hugocartwright/sungai
+"""
 from pathlib import Path
 
 from setuptools import find_packages, setup
@@ -36,6 +39,10 @@ setup_args = dict(
         'Programming Language :: Python :: 3.11',
         'Topic :: Software Development',
         'Topic :: Utilities',
+    ],
+    install_requires=[
+        'numpy',
+        'scipy',
     ],
     entry_points={
         'console_scripts': [
