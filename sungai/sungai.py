@@ -77,7 +77,7 @@ class DirectoryRater():
             )
             root = "/".join(root.split("/")[:-1])
         if depth <= 0:
-            print(root, depth, nested_structure)
+            # print(root, depth, nested_structure)
             nested_structure.sort(reverse=True)
             if nested_structure != [0, 0]:
                 self.nodes.append(
@@ -100,7 +100,7 @@ class DirectoryRater():
             return False
         if category == "dir":
             return self.check_is_symlink(element)
-        print("Category not recognized")
+        # print("Category not recognized")
         return False
 
     def preprocess(self):
@@ -140,7 +140,7 @@ class DirectoryRater():
             files = [x for x in files if not self.ignorable(x)]
 
             self.get_structure(root, files)
-            print(self.structure)
+            # print(self.structure)
             self.previous_dir = root
 
         self.append_current_nodes(self.previous_dir, 0, self.structure)
@@ -165,9 +165,12 @@ class DirectoryRater():
 
     def get_bad_nodes(self):
         """Get bad nodes."""
-        self.nodes = [x for x in self.nodes if x[3] < 0]
-
-        for node in self.nodes:
+        for node in [
+            x for x in sorted(
+                self.nodes,
+                key=lambda node: node[3],
+            ) if x[3] < 0
+        ]:
             self.suggestions.append(
                 f"Score: {node[1]} - {node[2]} - {node[3]} - {node[0]}"
             )
@@ -176,7 +179,6 @@ class DirectoryRater():
         """Process the nodes after directory traversal."""
         root_score = self.nodes[-1]
         self.score_nodes(root_score)
-        self.nodes.sort(key=lambda node: node[3])
         self.get_bad_nodes()
         return root_score
 

@@ -102,8 +102,5 @@ class TestDirectoryRater(unittest.TestCase):
             [32, 8, 6, 2, 0],
         ]
 
-        print(directory_rater.get_nodes())
-
         for i, node in enumerate(directory_rater.get_nodes()):
-            print(node, nodes[i])
             assert node[1] == sum(nodes[i])
