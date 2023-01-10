@@ -25,6 +25,15 @@ def nested_sum(nested_list):
     )
 
 
+def depth_set(nested_list, depth, value):
+    """Set nested list to value at given depth."""
+    if depth > 0:
+        nested_list[0] = depth_set(nested_list[0], depth - 1, value)
+    else:
+        nested_list.insert(0, value)
+    return nested_list
+
+
 class DirectoryRater():
     """Directory Rater."""
 
@@ -39,71 +48,106 @@ class DirectoryRater():
         self.structure = []
         self.previous_dir = ""
 
-    # def check_is_symlink(self, root):
-    #     """Check directory is a symlink."""
-    #     if os.path.islink(root):
-    #         if not self.symlink:
-    #             self.symlink = root
-    #         return True
-    #     return False
+    def check_is_symlink(self, root):
+        """Check directory is a symlink."""
+        if os.path.islink(root):
+            return True
+        return False
 
-    def get_structure(self, root, dirs, files):
+    def get_structure(self, root, files):
         """Get the directory's structure."""
-        if len(root) > 280:
-            self.warnings.append(f"Target path too long: {root}")
-        elif len(files) == 0:
-            if len(dirs) == 0:
-                self.warnings.append(f"Empty leaf directory: {root}")
-            elif len(dirs) == 1:
-                self.warnings.append(f"Empty node directory: {root}")
-        elif len(files) > 10000:
-            self.warnings.append(
-                f"Too many files in single directory: {root}"
+        depth = len(root.split("/")) - len(self.target.split("/"))
+
+        if self.previous_dir not in root:
+            self.append_current_nodes(self.previous_dir, depth, self.structure)
+
+        if self.previous_dir != "":
+            self.structure = depth_set(self.structure, depth - 1, [])
+
+        self.structure = depth_set(self.structure, depth, 0)
+        self.structure = depth_set(self.structure, depth, len(files))
+
+    def append_current_nodes(self, root, depth, nested_structure):
+        """Append current nodes."""
+        if isinstance(nested_structure[0], list):
+            nested_structure[0], root = self.append_current_nodes(
+                root,
+                depth - 1,
+                nested_structure[0],
             )
+            root = "/".join(root.split("/")[:-1])
+        if depth <= 0:
+            print(root, depth, nested_structure)
+            nested_structure.sort(reverse=True)
+            if nested_structure != [0, 0]:
+                self.nodes.append(
+                    [
+                        root,
+                        sum(nested_structure),
+                        get_r2_ln(nested_structure)[2],
+                    ]
+                )
+            nested_structure = sum(nested_structure)
 
-        if root not in self.previous_dir:
-            self.structure.append([])
-        else:
-            self.structure = self.structure[:-len(dirs)] + [
-                self.structure[-len(dirs):]
-            ]
+        return nested_structure, root
 
-        self.structure[-1].append(len(files))
-        self.structure[-1].append(0)
+    def update_ignore_rules(self, root, files):
+        """Look for any .ignore files here and add rules."""
 
-        self.append_current_node(root)
-
-    def append_current_node(self, root):
-        """Append current node."""
-        y_values = [nested_sum([x]) for x in self.structure[-1]]
-        y_values.sort(reverse=True)
-        if y_values != [0, 0]:
-            self.nodes.append(
-                [
-                    root,
-                    sum(y_values),
-                    get_r2_ln(y_values)[2],
-                ]
-            )
-
-    def is_ignorable(self):
+    def ignorable(self, element, category="file"):
         """Directory or file is ignorable."""
+        if category == "file":
+            return False
+        if category == "dir":
+            return self.check_is_symlink(element)
+        print("Category not recognized")
         return False
 
     def preprocess(self):
         """
         Preprocess directory.
 
-        Post-order traversal of the target directory.
+        Pre-order traversal of the target directory.
         - The objective is to go through each Element in the Tree.
         - Each node should have: the number of Elements it contains.
         - should include the current working directory count if it is > 0
+        - Get information on which files or directories need ignoring
+        - Allows to control traversal order when using os.walk by
+            ignoring files or dirs
         """
-        for root, dirs, files in os.walk(self.target, topdown=False):
-            if not self.is_ignorable():
-                # self.check_is_symlink(root)
-                self.get_structure(root, dirs, files)
+        for root, dirs, files in os.walk(self.target, topdown=True):
+            # basic validity check for root
+            if len(root) > 280:
+                self.warnings.append(
+                    f"Target path too long or too nested: {root}"
+                )
+            elif len(files) == 0:
+                if len(dirs) == 0:
+                    self.warnings.append(f"Empty leaf directory: {root}")
+                elif len(dirs) == 1:
+                    self.warnings.append(f"Empty node directory: {root}")
+            elif len(files) > 10000:
+                self.warnings.append(
+                    f"Too many files in single directory: {root}"
+                )
+
+            self.update_ignore_rules(root, files)
+
+            dirs.sort()
+            dirs = [x for x in dirs if not self.ignorable(x, category="dir")]
+
+            files.sort()
+            files = [x for x in files if not self.ignorable(x)]
+
+            self.get_structure(root, files)
+            print(self.structure)
             self.previous_dir = root
+
+        self.append_current_nodes(self.previous_dir, 0, self.structure)
+
+    def get_nodes(self):
+        """Get nodes."""
+        return self.nodes
 
     def score_nodes(self, root_score):
         """Score nodes."""

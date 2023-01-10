@@ -5,7 +5,7 @@ Sungai.
 """
 import unittest
 
-from sungai.sungai import DirectoryRater, get_r2_ln, nested_sum
+from sungai.sungai import DirectoryRater, depth_set, get_r2_ln, nested_sum
 
 
 class TestUtils(unittest.TestCase):
@@ -23,6 +23,32 @@ class TestUtils(unittest.TestCase):
         assert nested_sum([3, [4, 4, 2, 0], 0, 2, [3, [4, 2]]]) == 24
         assert nested_sum([3, 4, 5]) == 12
 
+    def depth_set(self):
+        """Test depth_set."""
+        assert depth_set(
+            [],
+            0,
+            1,
+        ) == [1]
+
+        assert depth_set(
+            [[], 0, 3],
+            1,
+            2,
+        ) == [[2], 0, 3]
+
+        assert depth_set(
+            [[2], 3, 0],
+            1,
+            0,
+        ) == [[0, 2], 3, 0]
+
+        assert depth_set(
+            [[[], 2, 0], 3, 0],
+            2,
+            2,
+        ) == [[[[2], 2, 0], 3, 0], 3, 0]
+
 
 class TestDirectoryRater(unittest.TestCase):
     """Test DirectoryRater."""
@@ -35,38 +61,8 @@ class TestDirectoryRater(unittest.TestCase):
         )
         directory_rater.run(False)
 
-        correct_structure = [
-            [
-                [2, 0],
-                [
-                    [
-                        [
-                            # [0, 0], [1, 0], 0, 0
-                            [1, 0], [1, 0], 0, 0
-                        ], 2, 0
-                    ],
-                    [1, 0],
-                    [2, 0], 1, 0
-                ],
-                [
-                    [
-                        # [0, 0], 17, 0
-                        [1, 0], 17, 0
-                    ],
-                    [
-                        [
-                            [5, 0], [1, 0], 1, 0
-                        ], 0, 0
-                    ],
-                    [
-                        [2, 0], 2, 0
-                    ], 3, 0
-                ], 6, 0
-            ]
-        ]
-        print(sorted(directory_rater.structure))
-        print(sorted(correct_structure))
-        assert sorted(directory_rater.structure) == sorted(correct_structure)
+        correct_structure = [32, 8, 6, 2, 0]
+        assert directory_rater.structure == correct_structure
 
     def test_score_nodes(self):
         """Test score_nodes method."""
@@ -84,3 +80,30 @@ class TestDirectoryRater(unittest.TestCase):
             1.0,
         )
         assert directory_rater.run(False) == 1
+
+        nodes = [
+            [2, 0],
+            [2, 2, 0],
+            [5, 0],
+            [1, 0],
+            [5, 1, 1, 0],
+            [7, 0, 0],
+            [1, 0],
+            [17, 1, 0],
+            [18, 7, 4, 3, 0],
+            [1, 0],
+            [1, 0],
+            [1, 1, 0, 0],
+            [2, 2, 0],
+            [2, 0],
+            [1, 0],
+            [4, 2, 1, 1, 0],
+            [2, 0],
+            [32, 8, 6, 2, 0],
+        ]
+
+        print(directory_rater.get_nodes())
+
+        for i, node in enumerate(directory_rater.get_nodes()):
+            print(node, nodes[i])
+            assert node[1] == sum(nodes[i])
