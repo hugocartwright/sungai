@@ -57,9 +57,8 @@ class TestDirectoryRater(unittest.TestCase):
         """Test get_structure method."""
         directory_rater = DirectoryRater(
             "tests/directory_tree",
-            1.0,
         )
-        directory_rater.run(False)
+        directory_rater.run(False, 1.0)
 
         correct_structure = [32, 8, 6, 2, 0]
         assert directory_rater.structure == correct_structure
@@ -71,15 +70,13 @@ class TestDirectoryRater(unittest.TestCase):
         """Test sungai output."""
         directory_rater = DirectoryRater(
             "tests/directory_tree",
-            0.8786859111811026,
         )
-        assert directory_rater.run(False) == 0
+        assert directory_rater.run(False, 0.8786859111811026) == 0
 
         directory_rater = DirectoryRater(
             "tests/directory_tree",
-            1.0,
         )
-        assert directory_rater.run(False) == 1
+        assert directory_rater.run(False, 1.0) == 1
 
         nodes = [
             [2, 0],

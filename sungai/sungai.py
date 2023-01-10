@@ -37,11 +37,9 @@ def depth_set(nested_list, depth, value):
 class DirectoryRater():
     """Directory Rater."""
 
-    def __init__(self, target, min_score):
+    def __init__(self, target):
         """Class constructor."""
         self.target = target
-        self.min_score = min_score
-
         self.suggestions = []
         self.nodes = []
         self.warnings = []
@@ -50,9 +48,7 @@ class DirectoryRater():
 
     def check_is_symlink(self, root):
         """Check directory is a symlink."""
-        if os.path.islink(root):
-            return True
-        return False
+        return os.path.islink(root)
 
     def get_structure(self, root, files):
         """Get the directory's structure."""
@@ -99,7 +95,11 @@ class DirectoryRater():
         if category == "file":
             return False
         if category == "dir":
-            return self.check_is_symlink(element)
+            if self.check_is_symlink(element):
+                self.warnings.append(
+                    f"Symbolic link found in ({self.target})"
+                )
+                return True
         # print("Category not recognized")
         return False
 
@@ -149,12 +149,14 @@ class DirectoryRater():
         """Get nodes."""
         return self.nodes
 
-    def score_nodes(self, root_score):
+    def score_nodes(self, root_score, min_score):
         """Score nodes."""
-        b_value = self.min_score - 1.0
+        if min_score is not None:
+            b_value = min_score - 1.0
+        else:
+            b_value = root_score[2] - 1.0
 
-        max_x = root_score[1]
-        max_x = math.log(max_x + 1)
+        max_x = math.log(root_score[1] + 1)
 
         a_value = 1.0 / (max_x)
 
@@ -172,13 +174,13 @@ class DirectoryRater():
             ) if x[3] < 0
         ]:
             self.suggestions.append(
-                f"Score: {node[1]} - {node[2]} - {node[3]} - {node[0]}"
+                f"Score: {node[2]:.4f} ({node[0]})"
             )
 
-    def process_nodes(self):
+    def process_nodes(self, min_score):
         """Process the nodes after directory traversal."""
         root_score = self.nodes[-1]
-        self.score_nodes(root_score)
+        self.score_nodes(root_score, min_score)
         self.get_bad_nodes()
         return root_score
 
@@ -186,7 +188,7 @@ class DirectoryRater():
         """Build results message."""
         prefix = "[sungai]"
         message = f"{prefix} Target directory: {self.target}\r\n"
-        message += f"{prefix} Score: {root_score}\r\n"
+        message += f"{prefix} Score: {root_score:.4f}\r\n"
         message += f"{prefix} Errors: {len(self.suggestions)}\r\n"
 
         if len(self.suggestions) > 0:
@@ -201,9 +203,9 @@ class DirectoryRater():
 
         return message
 
-    def run(self, verbose=False):
+    def run(self, verbose=False, min_score=None):
         """Run."""
         self.preprocess()
-        root_score = self.process_nodes()
+        root_score = self.process_nodes(min_score)
         print(self.results_message(root_score[2], verbose))
         return len(self.suggestions)

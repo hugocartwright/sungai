@@ -40,8 +40,7 @@ def run_sungai():
     try:
         directory_rater = DirectoryRater(
             args.target,
-            args.min_score,
         )
-        sys.exit(directory_rater.run(args.verbose))
+        sys.exit(directory_rater.run(args.verbose, args.min_score))
     except KeyboardInterrupt:
         sys.exit(1)
