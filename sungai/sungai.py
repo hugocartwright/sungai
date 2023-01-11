@@ -52,7 +52,11 @@ class DirectoryRater():
 
     def get_structure(self, root, files):
         """Get the directory's structure."""
-        depth = len(root.split("/")) - len(self.target.split("/"))
+        depth = len(
+            os.path.normpath(root).split(os.sep)
+        ) - len(
+            os.path.normpath(self.target).split(os.sep)
+        )
 
         if self.previous_dir not in root:
             self.append_current_nodes(self.previous_dir, depth, self.structure)
@@ -71,9 +75,8 @@ class DirectoryRater():
                 depth - 1,
                 nested_structure[0],
             )
-            root = "/".join(root.split("/")[:-1])
+            root, _ = os.path.split(root)
         if depth <= 0:
-            # print(root, depth, nested_structure)
             nested_structure.sort(reverse=True)
             if nested_structure != [0, 0]:
                 self.nodes.append(
@@ -99,8 +102,8 @@ class DirectoryRater():
                 self.warnings.append(
                     f"Symbolic link found in ({self.target})"
                 )
-                return True
-        # print("Category not recognized")
+                return False
+        print("Category not recognized")
         return False
 
     def preprocess(self):
@@ -131,16 +134,19 @@ class DirectoryRater():
                     f"Too many files in single directory: {root}"
                 )
 
+            # get ignore rules for root
             self.update_ignore_rules(root, files)
 
+            # remove dirs to ignore and sort walk order of dirs
             dirs.sort()
             dirs = [x for x in dirs if not self.ignorable(x, category="dir")]
 
+            # remove files to ignore and sort walk order of files
             files.sort()
             files = [x for x in files if not self.ignorable(x)]
 
+            # get current directory data
             self.get_structure(root, files)
-            # print(self.structure)
             self.previous_dir = root
 
         self.append_current_nodes(self.previous_dir, 0, self.structure)
@@ -163,7 +169,7 @@ class DirectoryRater():
         for i, node in enumerate(self.nodes):
             # y = ax + b
             score = node[2] - ((a_value * math.log(node[1] + 1)) + b_value)
-            self.nodes[i].append(score)
+            self.nodes[i].append(round(score, 4))
 
     def get_bad_nodes(self):
         """Get bad nodes."""
@@ -192,7 +198,7 @@ class DirectoryRater():
         message += f"{prefix} Errors: {len(self.suggestions)}\r\n"
 
         if len(self.suggestions) > 0:
-            message += f"{prefix} Suggested fixes:\r\n"
+            message += f"{prefix} Suggested fixes (descending importance):\r\n"
             for suggestion in self.suggestions:
                 message += f"{prefix} - {suggestion}\r\n"
 
@@ -203,9 +209,10 @@ class DirectoryRater():
 
         return message
 
-    def run(self, verbose=False, min_score=None):
+    def run(self, verbose=False, min_score=None, quiet=False):
         """Run."""
         self.preprocess()
         root_score = self.process_nodes(min_score)
-        print(self.results_message(root_score[2], verbose))
-        return len(self.suggestions)
+        if not quiet:
+            print(self.results_message(root_score[2], verbose))
+        return 1 if len(self.suggestions) > 0 else 0

@@ -4,6 +4,7 @@ Sungai.
 - Project URL: https://github.com/hugocartwright/sungai
 """
 import argparse
+import os
 import sys
 
 from .sungai import DirectoryRater
@@ -38,9 +39,15 @@ def run_sungai():
     args = parser.parse_args()
 
     try:
-        directory_rater = DirectoryRater(
-            args.target,
-        )
-        sys.exit(directory_rater.run(args.verbose, args.min_score))
+        print(f"Sungai ({__version__})")
+        target = os.path.normpath(args.target)
+        if os.path.isdir(target):
+            directory_rater = DirectoryRater(
+                target,
+            )
+            sys.exit(directory_rater.run(args.verbose, args.min_score))
+        else:
+            print("[sungai] Error: Target not found")
+            sys.exit(1)
     except KeyboardInterrupt:
         sys.exit(1)
