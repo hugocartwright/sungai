@@ -9,7 +9,7 @@ import sys
 
 from .sungai import DirectoryRater
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 def run_sungai():
@@ -40,12 +40,17 @@ def run_sungai():
 
     try:
         print(f"Sungai ({__version__})")
-        target = os.path.normpath(args.target)
+        target = os.path.abspath(args.target)
         if os.path.isdir(target):
             directory_rater = DirectoryRater(
                 target,
             )
-            sys.exit(directory_rater.run(args.verbose, args.min_score))
+            sys.exit(
+                directory_rater.run(
+                    verbose=args.verbose,
+                    min_score=args.min_score,
+                )
+            )
         else:
             print("[sungai] Error: Target not found")
             sys.exit(1)
