@@ -59,7 +59,11 @@ class DirectoryRater():
         )
 
         if self.previous_dir not in root:
-            self.append_current_nodes(self.previous_dir, depth, self.structure)
+            self.structure, _ = self.append_current_nodes(
+                self.previous_dir,
+                depth,
+                self.structure,
+            )
 
         if self.previous_dir != "":
             self.structure = depth_set(self.structure, depth - 1, [])
@@ -77,6 +81,9 @@ class DirectoryRater():
             )
             root, _ = os.path.split(root)
         if depth <= 0:
+            nested_structure = [
+                sum(x) if isinstance(x, list) else x for x in nested_structure
+            ]
             nested_structure.sort(reverse=True)
             if nested_structure != [0, 0]:
                 self.nodes.append(
@@ -103,7 +110,6 @@ class DirectoryRater():
                     f"Symbolic link found in ({self.target})"
                 )
                 return False
-        print("Category not recognized")
         return False
 
     def preprocess(self):
@@ -142,14 +148,13 @@ class DirectoryRater():
             dirs = [x for x in dirs if not self.ignorable(x, category="dir")]
 
             # remove files to ignore and sort walk order of files
-            files.sort()
+            # files.sort()
             files = [x for x in files if not self.ignorable(x)]
-
             # get current directory data
             self.get_structure(root, files)
             self.previous_dir = root
-
         self.append_current_nodes(self.previous_dir, 0, self.structure)
+        self.structure.sort(reverse=True)
 
     def get_nodes(self):
         """Get nodes."""
