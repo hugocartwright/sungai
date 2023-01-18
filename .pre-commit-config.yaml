@@ -41,6 +41,7 @@ repos:
         entry: sungai
         language: system
         types: [python]
+        args: [".", "--min_score", "0.9"]
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.4
     hooks:
