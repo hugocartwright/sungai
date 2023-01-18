@@ -28,7 +28,7 @@ Examples include:
 - ignoring sungai
 - altogether deleting the given directories
 
-Sungai can not yet be configured to ignore given files or directories as is customary with .gitignore or .dockerignore files.
+Sungai cannot yet be configured to ignore given files or directories as is customary with .gitignore or .dockerignore files.
 
 
 ## Contributing
