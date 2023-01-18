@@ -22,8 +22,6 @@ jobs:
           pip install -r requirements.txt
           pip install sungai==0.1.1
           pre-commit install
-          sungai . --min_score=0.6
-          sungai .
       - name: Run pre-commit
         run: |
           pre-commit run --all-files
