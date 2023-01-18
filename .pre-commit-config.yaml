@@ -34,14 +34,14 @@ repos:
     rev: "4.1"
     hooks:
       - id: pyroma
-  - repo: local
-    hooks:
-      - id: sungai
-        name: sungai
-        entry: sungai
-        language: system
-        types: [python]
-        args: [".", "--min_score", "0.9"]
+#  - repo: local
+#    hooks:
+#      - id: sungai
+#        name: sungai
+#        entry: sungai
+#        types: [python]
+#        language: system
+#        args: [--target=., --min_score=0.9]
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.4
     hooks:

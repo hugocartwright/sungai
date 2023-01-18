@@ -6,4 +6,4 @@
   require_serial: true
   description: 'Sungai is a directory tree rater.'
   pass_filenames: false
-  always_run: true
+  stages: [commit, merge-commit, push, manual]
