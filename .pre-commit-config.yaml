@@ -24,7 +24,7 @@ repos:
     rev: "v2.15.9"
     hooks:
       - id: pylint
-        additional_dependencies: ["scipy==1.9.3"]
+        additional_dependencies: ["numpy==1.24.1"]
         exclude: tests/directory_tree
   - repo: https://github.com/pycqa/pydocstyle
     rev: "6.1.1"

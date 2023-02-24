@@ -6,16 +6,28 @@ Sungai.
 import math
 import os
 
-from scipy import stats
+import numpy as np
 
 
 def get_r2_ln(y_values):
     """Linear regression."""
-    x_values = [math.log(i + 1) for i in range(len(y_values))]
+    x_values = np.log(np.arange(1, len(y_values) + 1))
 
-    # slope, intercept, r, p, se = linregress(x, y)
-    slope, intercept, r_value, _, _ = stats.linregress(x_values, y_values)
-    return [slope, intercept, r_value * r_value]
+    # Compute linear regression using np.polyfit
+    slope, intercept = np.polyfit(x_values, y_values, deg=1)
+
+    # Compute R-squared value
+    y_mean = np.mean(y_values)
+    y_pred = slope * x_values + intercept
+    ss_tot = np.sum((y_values - y_mean) ** 2)
+    ss_res = np.sum((y_values - y_pred) ** 2)
+
+    if ss_tot == 0:
+        r_squared = 0.0
+    else:
+        r_squared = 1 - ss_res / ss_tot
+
+    return [slope, intercept, r_squared]
 
 
 def nested_sum(nested_list):
