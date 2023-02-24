@@ -9,7 +9,7 @@ import sys
 
 from .sungai import DirectoryRater
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 
 def run_sungai():

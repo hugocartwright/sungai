@@ -9,8 +9,8 @@ from setuptools import find_packages, setup
 
 setup_args = dict(
     name='sungai',
-    python_requires='>3.6.0',
-    version="0.1.1",
+    python_requires='>3.7.0',
+    version="0.1.2",
     description='Sungai is a directory rating tool',
     license='MIT License',
     packages=find_packages(),
@@ -40,8 +40,7 @@ setup_args = dict(
         'Topic :: Utilities',
     ],
     install_requires=[
-        'numpy',
-        'scipy',
+        'numpy==1.24.1',
     ],
     entry_points={
         'console_scripts': [
