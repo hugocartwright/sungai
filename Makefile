@@ -1,4 +1,5 @@
 clean:
+	rm -rf .tox sungai.egg-info .coverage
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 install:
