@@ -2,7 +2,7 @@ clean:
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 install:
-	pip install -r requirements.txt --no-cache-dir
+	pip install -r requirements-dev.txt --no-cache-dir
 	pre-commit install
 
 lint:

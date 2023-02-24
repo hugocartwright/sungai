@@ -14,7 +14,7 @@ matrix:
 
 install:
   - pip install --upgrade pip
-  - pip install -r requirements.txt --no-cache-dir
+  - pip install -r requirements-dev.txt --no-cache-dir
   - pip install sungai==0.1.1
   - pre-commit install
 
