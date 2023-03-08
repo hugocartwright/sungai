@@ -1,5 +1,2 @@
-coverage==7.0.4
-pre-commit==2.21.0
 numpy==1.24.1
-scipy==1.10.0
-tox==4.2.6
+gitignore_parser==0.1.3

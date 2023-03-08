@@ -6,16 +6,29 @@ Sungai.
 import math
 import os
 
-from scipy import stats
+import gitignore_parser
+import numpy as np
 
 
 def get_r2_ln(y_values):
     """Linear regression."""
-    x_values = [math.log(i + 1) for i in range(len(y_values))]
+    x_values = np.log(np.arange(1, len(y_values) + 1))
 
-    # slope, intercept, r, p, se = linregress(x, y)
-    slope, intercept, r_value, _, _ = stats.linregress(x_values, y_values)
-    return [slope, intercept, r_value * r_value]
+    # Compute linear regression using np.polyfit
+    slope, intercept = np.polyfit(x_values, y_values, deg=1)
+
+    # Compute R-squared value
+    y_mean = np.mean(y_values)
+    y_pred = slope * x_values + intercept
+    ss_tot = np.sum((y_values - y_mean) ** 2)
+    ss_res = np.sum((y_values - y_pred) ** 2)
+
+    if ss_tot == 0:
+        r_squared = 0.0
+    else:
+        r_squared = 1 - ss_res / ss_tot
+
+    return [slope, intercept, r_squared]
 
 
 def nested_sum(nested_list):
@@ -37,7 +50,7 @@ def depth_set(nested_list, depth, value):
 class DirectoryRater():
     """Directory Rater."""
 
-    def __init__(self, target):
+    def __init__(self, target, ignore_config=None):
         """Class constructor."""
         self.target = target
         self.suggestions = []
@@ -45,6 +58,9 @@ class DirectoryRater():
         self.warnings = []
         self.structure = []
         self.previous_dir = ""
+        self.ignore = None
+        if ignore_config:
+            self.ignore = gitignore_parser.parse_gitignore(ignore_config)
 
     def check_is_symlink(self, root):
         """Check directory is a symlink."""
@@ -102,6 +118,8 @@ class DirectoryRater():
 
     def ignorable(self, element, category="file"):
         """Directory or file is ignorable."""
+        if self.ignore and self.ignore(element):
+            return True
         if category == "file":
             return False
         if category == "dir":
@@ -125,6 +143,24 @@ class DirectoryRater():
             ignoring files or dirs
         """
         for root, dirs, files in os.walk(self.target, topdown=True):
+            # get ignore rules for root
+            self.update_ignore_rules(root, files)
+
+            # remove dirs to ignore and sort walk order of dirs
+            dirs[:] = [
+                x for x in dirs if not self.ignorable(
+                    os.path.join(root, x), category="dir"
+                )
+            ]
+            dirs.sort()
+
+            # remove files to ignore
+            files[:] = [
+                x for x in files if not self.ignorable(
+                    os.path.join(root, x)
+                )
+            ]
+
             # basic validity check for root
             if len(root) > 280:
                 self.warnings.append(
@@ -140,16 +176,6 @@ class DirectoryRater():
                     f"Too many files in single directory: {root}"
                 )
 
-            # get ignore rules for root
-            self.update_ignore_rules(root, files)
-
-            # remove dirs to ignore and sort walk order of dirs
-            dirs.sort()
-            dirs = [x for x in dirs if not self.ignorable(x, category="dir")]
-
-            # remove files to ignore and sort walk order of files
-            # files.sort()
-            files = [x for x in files if not self.ignorable(x)]
             # get current directory data
             self.get_structure(root, files)
             self.previous_dir = root

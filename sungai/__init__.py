@@ -9,7 +9,7 @@ import sys
 
 from .sungai import DirectoryRater
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 
 def run_sungai():
@@ -30,6 +30,13 @@ def run_sungai():
         default=None,
     )
     parser.add_argument(
+        "--ignore_config",
+        type=str,
+        help="The ignore config file path. Must follow .gitignore syntax.",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Add if you want verbose output.",
@@ -44,6 +51,7 @@ def run_sungai():
         if os.path.isdir(target):
             directory_rater = DirectoryRater(
                 target,
+                ignore_config=args.ignore_config,
             )
             sys.exit(
                 directory_rater.run(

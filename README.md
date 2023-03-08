@@ -21,14 +21,17 @@ The target directory will get a rating between 0.0 and 1.0. The minimum score re
 Sungai lists directory paths in descending order of priority.
 
 CAUTION: It is entirely up to the user to rearrange the contents of those directories. Or not.
-Examples include:
+Example actions include:
 - moving them up to their parent directory
 - rearranging their files
 - grouping their directories into new ones
 - ignoring sungai
 - altogether deleting the given directories
 
-Sungai cannot yet be configured to ignore given files or directories as is customary with .gitignore or .dockerignore files.
+### Ignore files or directories
+An ignore file path can be specified to sungai. The file should follow the .gitignore syntax.
+
+```sungai <your_path_string_here> --ignore_config .gitignore```
 
 
 ## Contributing
