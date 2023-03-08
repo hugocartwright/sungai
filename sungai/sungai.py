@@ -6,6 +6,7 @@ Sungai.
 import math
 import os
 
+import gitignore_parser
 import numpy as np
 
 
@@ -49,7 +50,7 @@ def depth_set(nested_list, depth, value):
 class DirectoryRater():
     """Directory Rater."""
 
-    def __init__(self, target):
+    def __init__(self, target, ignore_config=None):
         """Class constructor."""
         self.target = target
         self.suggestions = []
@@ -57,6 +58,9 @@ class DirectoryRater():
         self.warnings = []
         self.structure = []
         self.previous_dir = ""
+        self.ignore = None
+        if ignore_config:
+            self.ignore = gitignore_parser.parse_gitignore(ignore_config)
 
     def check_is_symlink(self, root):
         """Check directory is a symlink."""
@@ -114,6 +118,8 @@ class DirectoryRater():
 
     def ignorable(self, element, category="file"):
         """Directory or file is ignorable."""
+        if self.ignore and self.ignore(element):
+            return True
         if category == "file":
             return False
         if category == "dir":
@@ -137,6 +143,24 @@ class DirectoryRater():
             ignoring files or dirs
         """
         for root, dirs, files in os.walk(self.target, topdown=True):
+            # get ignore rules for root
+            self.update_ignore_rules(root, files)
+
+            # remove dirs to ignore and sort walk order of dirs
+            dirs[:] = [
+                x for x in dirs if not self.ignorable(
+                    os.path.join(root, x), category="dir"
+                )
+            ]
+            dirs.sort()
+
+            # remove files to ignore
+            files[:] = [
+                x for x in files if not self.ignorable(
+                    os.path.join(root, x)
+                )
+            ]
+
             # basic validity check for root
             if len(root) > 280:
                 self.warnings.append(
@@ -152,16 +176,6 @@ class DirectoryRater():
                     f"Too many files in single directory: {root}"
                 )
 
-            # get ignore rules for root
-            self.update_ignore_rules(root, files)
-
-            # remove dirs to ignore and sort walk order of dirs
-            dirs.sort()
-            dirs = [x for x in dirs if not self.ignorable(x, category="dir")]
-
-            # remove files to ignore and sort walk order of files
-            # files.sort()
-            files = [x for x in files if not self.ignorable(x)]
             # get current directory data
             self.get_structure(root, files)
             self.previous_dir = root

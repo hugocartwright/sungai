@@ -1,3 +1,5 @@
+fail_fast: true
+
 # More at https://github.com/orgs/PyCQA/repositories
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -24,7 +26,10 @@ repos:
     rev: "v2.15.9"
     hooks:
       - id: pylint
-        additional_dependencies: ["numpy==1.24.1"]
+        additional_dependencies: [
+          "numpy==1.24.1",
+          "gitignore_parser==0.1.3"
+        ]
         exclude: tests/directory_tree
   - repo: https://github.com/pycqa/pydocstyle
     rev: "6.1.1"
