@@ -60,7 +60,10 @@ class DirectoryRater():
         self.previous_dir = ""
         self.ignore = None
         if ignore_config:
-            self.ignore = gitignore_parser.parse_gitignore(ignore_config)
+            if os.path.isfile(ignore_config):
+                self.ignore = gitignore_parser.parse_gitignore(ignore_config)
+            else:
+                print("Could not find ignore_config file.")
 
     def check_is_symlink(self, root):
         """Check directory is a symlink."""
