@@ -29,9 +29,9 @@ Example actions include:
 - altogether deleting the given directories
 
 ### Ignore files or directories
-An ignore file path can be specified to sungai. The file should follow the .gitignore syntax.
+An ignore file path can be specified to sungai. The given file should follow the .gitignore syntax.
 
-```sungai <your_path_string_here> --ignore_config .gitignore```
+```sungai <your_path_string_here> --ignore_config .sungai_ignore```
 
 
 ## Contributing
