@@ -47,7 +47,7 @@ repos:
         entry: sungai
         types: [python]
         language: system
-        args: [., "--min_score=0.6"]
+        args: [., "--min_score=0.8", "--ignore_config=.sungai_ignore"]
         pass_filenames: false
         always_run: true
   - repo: https://github.com/PyCQA/bandit

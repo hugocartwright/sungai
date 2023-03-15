@@ -1,5 +1,5 @@
 clean:
-	rm -rf .tox sungai.egg-info .coverage
+	rm -rf .tox sungai.egg-info .coverage dist build
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 install:
@@ -13,3 +13,12 @@ test:
 	coverage run -m unittest discover
 	coverage report -m
 	tox -e py
+
+build:
+	python setup.py sdist bdist_wheel
+
+deploy_pypi:
+	twine upload dist/*
+
+bump_version:
+	bumpver update --patch
