@@ -19,3 +19,6 @@ build:
 
 deploy_pypi:
 	twine upload dist/*
+
+bump_version:
+	bumpver update --patch
