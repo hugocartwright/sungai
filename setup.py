@@ -10,7 +10,7 @@ from setuptools import find_packages, setup
 setup_args = dict(
     name='sungai',
     python_requires='>3.7.0',
-    version="0.1.4",
+    version="0.1.5",
     description='Sungai is a directory rating tool',
     license='MIT License',
     packages=find_packages(),
