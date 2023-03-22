@@ -4,8 +4,8 @@ Sungai.
 - Project URL: https://github.com/hugocartwright/sungai
 """
 import argparse
-import os
 import sys
+from pathlib import Path
 
 from .sungai import DirectoryRater
 
@@ -45,22 +45,31 @@ def run_sungai():
     )
     args = parser.parse_args()
 
+    target = Path(args.target)
+
+    if not target.is_dir():
+        print("[sungai] Error: Target not found")
+        sys.exit(1)
+
+    ignore_config = None
+    if args.ignore_config:
+        ignore_config = Path(args.ignore_config)
+        if not ignore_config.is_file():
+            print("[sungai] Error: Could not find ignore_config file")
+            sys.exit(1)
+
     try:
         print(f"Sungai ({__version__})")
-        target = os.path.abspath(args.target)
-        if os.path.isdir(target):
-            directory_rater = DirectoryRater(
-                target,
-                ignore_config=args.ignore_config,
+
+        directory_rater = DirectoryRater(
+            target,
+            ignore_config=ignore_config,
+        )
+        sys.exit(
+            directory_rater.run(
+                verbose=args.verbose,
+                min_score=args.min_score,
             )
-            sys.exit(
-                directory_rater.run(
-                    verbose=args.verbose,
-                    min_score=args.min_score,
-                )
-            )
-        else:
-            print("[sungai] Error: Target not found")
-            sys.exit(1)
+        )
     except KeyboardInterrupt:
         sys.exit(1)

@@ -24,7 +24,7 @@ class TestUtils(unittest.TestCase):
         assert nested_sum([3, [4, 4, 2, 0], 0, 2, [3, [4, 2]]]) == 24
         assert nested_sum([3, 4, 5]) == 12
 
-    def depth_set(self):
+    def test_depth_set(self):
         """Test depth_set."""
         assert depth_set(
             [],
@@ -48,7 +48,7 @@ class TestUtils(unittest.TestCase):
             [[[], 2, 0], 3, 0],
             2,
             2,
-        ) == [[[[2], 2, 0], 3, 0], 3, 0]
+        ) == [[[2], 2, 0], 3, 0]
 
 
 class TestDirectoryRater(unittest.TestCase):

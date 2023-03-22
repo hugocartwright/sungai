@@ -5,6 +5,7 @@ Sungai.
 """
 import math
 import os
+from pathlib import Path, PurePath
 
 import gitignore_parser
 import numpy as np
@@ -50,47 +51,35 @@ def depth_set(nested_list, depth, value):
 class DirectoryRater():
     """Directory Rater."""
 
-    def __init__(self, target, ignore_config=None):
+    def __init__(self, target: Path, ignore_config: Path = None):
         """Class constructor."""
         self.target = target
         self.suggestions = []
         self.nodes = []
         self.warnings = []
         self.structure = []
-        self.previous_dir = ""
+        self.previous_dir = None
         self.ignore = None
-        if ignore_config:
-            if os.path.isfile(ignore_config):
-                self.ignore = gitignore_parser.parse_gitignore(ignore_config)
-            else:
-                print("Could not find ignore_config file.")
+        if ignore_config is not None:
+            self.ignore = gitignore_parser.parse_gitignore(ignore_config)
 
-    def check_is_symlink(self, root):
-        """Check directory is a symlink."""
-        return os.path.islink(root)
-
-    def get_structure(self, root, files):
+    def get_structure(self, root: Path, files):
         """Get the directory's structure."""
-        depth = len(
-            os.path.normpath(root).split(os.sep)
-        ) - len(
-            os.path.normpath(self.target).split(os.sep)
-        )
-
-        if self.previous_dir not in root:
+        depth = len(Path(root).relative_to(Path(self.target)).parts)
+        if self.previous_dir and not self.previous_dir.is_relative_to(root):
             self.structure, _ = self.append_current_nodes(
                 self.previous_dir,
                 depth,
                 self.structure,
             )
 
-        if self.previous_dir != "":
+        if self.previous_dir:
             self.structure = depth_set(self.structure, depth - 1, [])
 
         self.structure = depth_set(self.structure, depth, 0)
         self.structure = depth_set(self.structure, depth, len(files))
 
-    def append_current_nodes(self, root, depth, nested_structure):
+    def append_current_nodes(self, root: Path, depth, nested_structure):
         """Append current nodes."""
         if isinstance(nested_structure[0], list):
             nested_structure[0], root = self.append_current_nodes(
@@ -98,7 +87,7 @@ class DirectoryRater():
                 depth - 1,
                 nested_structure[0],
             )
-            root, _ = os.path.split(root)
+            root = root.parents[0]
         if depth <= 0:
             nested_structure = [
                 sum(x) if isinstance(x, list) else x for x in nested_structure
@@ -116,21 +105,20 @@ class DirectoryRater():
 
         return nested_structure, root
 
-    def update_ignore_rules(self, root, files):
+    def update_ignore_rules(self, root: Path, files):
         """Look for any .ignore files here and add rules."""
 
-    def ignorable(self, element, category="file"):
+    def ignorable(self, element: Path, category="file"):
         """Directory or file is ignorable."""
+        if element.is_symlink():
+            self.warnings.append(
+                f"Symbolic link found in ({self.target})"
+            )
+            return True
         if self.ignore and self.ignore(element):
             return True
         if category == "file":
             return False
-        if category == "dir":
-            if self.check_is_symlink(element):
-                self.warnings.append(
-                    f"Symbolic link found in ({self.target})"
-                )
-                return False
         return False
 
     def preprocess(self):
@@ -147,12 +135,12 @@ class DirectoryRater():
         """
         for root, dirs, files in os.walk(self.target, topdown=True):
             # get ignore rules for root
-            self.update_ignore_rules(root, files)
+            self.update_ignore_rules(Path(root), files)
 
             # remove dirs to ignore and sort walk order of dirs
             dirs[:] = [
                 x for x in dirs if not self.ignorable(
-                    os.path.join(root, x), category="dir"
+                    Path(PurePath(root, x).joinpath()), category="dir"
                 )
             ]
             dirs.sort()
@@ -160,28 +148,28 @@ class DirectoryRater():
             # remove files to ignore
             files[:] = [
                 x for x in files if not self.ignorable(
-                    os.path.join(root, x)
+                    Path(PurePath(root, x).joinpath())
                 )
             ]
 
             # basic validity check for root
-            if len(root) > 280:
+            if len(str(Path(root))) > 280:
                 self.warnings.append(
-                    f"Target path too long or too nested: {root}"
+                    f"Target path too long or too nested: {Path(root)}"
                 )
             elif len(files) == 0:
                 if len(dirs) == 0:
-                    self.warnings.append(f"Empty leaf directory: {root}")
+                    self.warnings.append(f"Empty leaf directory: {Path(root)}")
                 elif len(dirs) == 1:
-                    self.warnings.append(f"Empty node directory: {root}")
+                    self.warnings.append(f"Empty node directory: {Path(root)}")
             elif len(files) > 10000:
                 self.warnings.append(
-                    f"Too many files in single directory: {root}"
+                    f"Too many files in single directory: {Path(root)}"
                 )
 
             # get current directory data
-            self.get_structure(root, files)
-            self.previous_dir = root
+            self.get_structure(Path(root), files)
+            self.previous_dir = Path(root)
         self.append_current_nodes(self.previous_dir, 0, self.structure)
         self.structure.sort(reverse=True)
 
