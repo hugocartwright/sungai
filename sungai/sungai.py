@@ -155,8 +155,8 @@ class DirectoryRater():
             # basic validity check for root
             if len(str(Path(root))) > 280:
                 self.warnings.append(
-                    f"Target path too long or too nested: {Path(root)}",
-                    os.sep
+                    f"Target path too long or too nested: {Path(root)}"
+                    + os.sep
                 )
             elif len(files) == 0:
                 if len(dirs) == 0:  # pragma: no cover
@@ -165,8 +165,8 @@ class DirectoryRater():
                     self.warnings.append(f"Empty node directory: {Path(root)}")
             if len(files) > 10000:
                 self.warnings.append(
-                    f"Too many files in single directory: {Path(root)}",
-                    os.sep
+                    f"Too many files in single directory: {Path(root)}"
+                    + os.sep
                 )
 
             # get current directory data

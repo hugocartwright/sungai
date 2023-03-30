@@ -376,3 +376,4 @@ class TestDirectoryRaterLimit(unittest.TestCase):
             "Symbolic link found in (tests/full_tree_with_long_path"
             + self.long_path + ")"
         ]
+        patcher.stop()
