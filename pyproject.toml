@@ -53,5 +53,5 @@ push            = false
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['version = "{version}"']
-"setup.py" = ['version="{version}"']
+"setup.py" = ['"version": "{version}"']
 "sungai/__init__.py" = ['__version__ = "{version}"']
