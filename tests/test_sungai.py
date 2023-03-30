@@ -3,7 +3,9 @@ Sungai.
 
 - Project URL: https://github.com/hugocartwright/sungai
 """
+import io
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from sungai.sungai import DirectoryRater, depth_set, get_r2_ln, nested_sum
@@ -242,6 +244,27 @@ class TestDirectoryRater(unittest.TestCase):
         )
         assert directory_rater.run(False, 1.0, quiet=True) == 1
 
+        # no min_score
+        directory_rater = DirectoryRater(
+            "tests/directory_tree",
+        )
+        assert directory_rater.run(False, quiet=True) == 0
+
+        # not quiet
+        directory_rater = DirectoryRater(
+            "tests/directory_tree",
+        )
+
+        # run the following assert but without printing to stdout
+        with patch('sys.stdout', new=io.StringIO()):
+            assert directory_rater.run(False, 1.0) == 1
+
+    def test_get_nodes(self):
+        """Test get_nodes method."""
+        directory_rater = DirectoryRater(
+            "tests/directory_tree",
+        )
+        assert directory_rater.run(False, 1.0, quiet=True) == 1
         nodes = [
             [2, 0],
             [2, 2, 0],
@@ -263,3 +286,94 @@ class TestDirectoryRater(unittest.TestCase):
 
         for i, node in enumerate(directory_rater.get_nodes()):
             assert node[1] == sum(nodes[i])
+
+        directory_rater = DirectoryRater(
+            "tests/directory_tree",
+            ignore_config="tests/.test_sungai_ignore",
+        )
+        assert not directory_rater.get_nodes()
+
+    def test_results_message(self):
+        """Test build results message."""
+        directory_rater = DirectoryRater(
+            "tests/directory_tree",
+        )
+
+        directory_rater.suggestions = ["ABC", "DEF"]
+        directory_rater.warnings = ["No .sungaiignore file found"]
+
+        assert directory_rater.results_message(0.8887999, True) == \
+            "[sungai] Target directory: tests/directory_tree\r\n"\
+            "[sungai] Score: 0.8888\r\n"\
+            "[sungai] Errors: 2\r\n"\
+            "[sungai] Suggested fixes (descending importance):\r\n"\
+            "[sungai] - ABC\r\n"\
+            "[sungai] - DEF\r\n"\
+            "[sungai] Warnings issued:\r\n"\
+            "[sungai] - No .sungaiignore file found\r\n"
+
+
+class TestDirectoryRaterLimit(unittest.TestCase):
+    """Test DirectoryRater's limits."""
+
+    def setUp(self):
+        """Set up test fixtures.
+
+        tests/full_tree_with_long_path{'_path/' * 100}/
+        ├── blah1/ - blah500/
+        ├── 1-20000.cpp
+        """
+        self.long_path = '_path/' * 100
+        self.mock_os_walk = MagicMock()
+
+        self.patcher = patch('os.walk', self.mock_os_walk)
+        self.patcher.start()
+
+        self.mock_os_walk.return_value = [
+            (
+                'tests/full_tree_with_long_path' + self.long_path,
+                [f'blah{i}' for i in range(1, 5001)],
+                [f'{i}.cpp' for i in range(1, 20001)],
+            ),
+        ]
+
+    def tearDown(self):
+        """Tear down test fixtures."""
+        self.patcher.stop()
+
+    def test_preprocess(self):
+        """Test preprocess method."""
+        directory_rater = DirectoryRater(
+            "tests/full_tree_with_long_path" + self.long_path,
+        )
+        directory_rater.preprocess()
+        assert directory_rater.warnings == [
+            "Target path too long or too nested: "
+            "tests/full_tree_with_long_path" + self.long_path,
+            "Too many files in single directory: "
+            "tests/full_tree_with_long_path" + self.long_path,
+        ]
+
+    def test_ignorable_symlink(self):
+        """Test ignorable method is_symlink condition."""
+        # Mock is_symlink.
+        mock_is_symlink = MagicMock()
+
+        patcher = patch('pathlib.Path.is_symlink', mock_is_symlink)
+        patcher.start()
+
+        mock_is_symlink.return_value = True
+
+        # Test ignorable method.
+        directory_rater = DirectoryRater(
+            "tests/full_tree_with_long_path" + self.long_path,
+        )
+
+        directory_rater.ignorable(
+            Path("tests/full_tree_with_long_path" + self.long_path)
+        )
+        assert directory_rater.warnings == [
+            "Symbolic link found in (tests/full_tree_with_long_path"
+            + self.long_path + ")"
+        ]
+        patcher.stop()

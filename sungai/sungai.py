@@ -116,7 +116,7 @@ class DirectoryRater():
             )
             return True
         if self.ignore and self.ignore(element):
-            return True
+            return True  # pragma: no cover
         if category == "file":
             return False
         return False
@@ -156,15 +156,17 @@ class DirectoryRater():
             if len(str(Path(root))) > 280:
                 self.warnings.append(
                     f"Target path too long or too nested: {Path(root)}"
+                    + os.sep
                 )
             elif len(files) == 0:
-                if len(dirs) == 0:
+                if len(dirs) == 0:  # pragma: no cover
                     self.warnings.append(f"Empty leaf directory: {Path(root)}")
                 elif len(dirs) == 1:
                     self.warnings.append(f"Empty node directory: {Path(root)}")
-            elif len(files) > 10000:
+            if len(files) > 10000:
                 self.warnings.append(
                     f"Too many files in single directory: {Path(root)}"
+                    + os.sep
                 )
 
             # get current directory data

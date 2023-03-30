@@ -11,7 +11,7 @@ lint:
 
 test:
 	coverage run -m unittest discover
-	coverage report -m
+	coverage report -m --fail-under 100
 	tox -e py
 
 build:
