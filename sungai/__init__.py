@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .sungai import DirectoryRater
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 
 
 def get_args():  # pragma: no cover
