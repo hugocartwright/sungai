@@ -12,8 +12,8 @@ from .sungai import DirectoryRater
 __version__ = "0.1.5"
 
 
-def run_sungai():
-    """Run sungai."""
+def get_args():  # pragma: no cover
+    """Get command line arguments."""
     parser = argparse.ArgumentParser(
         description="Sungai"
     )
@@ -43,7 +43,13 @@ def run_sungai():
         required=False,
         default=False,
     )
-    args = parser.parse_args()
+
+    return parser.parse_args()
+
+
+def run_sungai():  # pragma: no cover
+    """Run sungai."""
+    args = get_args()
 
     target = Path(args.target)
 
