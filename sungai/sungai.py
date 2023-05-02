@@ -3,6 +3,8 @@ Sungai.
 
 - Project URL: https://github.com/hugocartwright/sungai
 """
+from __future__ import annotations
+
 import math
 import os
 from pathlib import Path, PurePath
