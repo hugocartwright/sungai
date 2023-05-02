@@ -14,19 +14,19 @@ from sungai.sungai import DirectoryRater, depth_set, get_r2_ln, nested_sum
 class TestUtils(unittest.TestCase):
     """Test sungai utils."""
 
-    def test_get_r2_ln(self):
+    def test_get_r2_ln(self) -> None:
         """Test linear regression."""
         assert round(get_r2_ln([17, 7, 4, 3])[2], 5) == 0.94668
         assert get_r2_ln([1, 0])[2] == 1.0
         assert get_r2_ln([0, 0])[2] == 0.0
         assert get_r2_ln([2, 2, 2, 2, 2])[2] == 0.0
 
-    def test_nested_sum(self):
+    def test_nested_sum(self) -> None:
         """Test sum of nested list."""
         assert nested_sum([3, [4, 4, 2, 0], 0, 2, [3, [4, 2]]]) == 24
         assert nested_sum([3, 4, 5]) == 12
 
-    def test_depth_set(self):
+    def test_depth_set(self) -> None:
         """Test depth_set."""
         assert depth_set(
             [],
@@ -56,7 +56,7 @@ class TestUtils(unittest.TestCase):
 class TestDirectoryRater(unittest.TestCase):
     """Test DirectoryRater."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures.
 
         tests/directory_tree/
@@ -215,54 +215,54 @@ class TestDirectoryRater(unittest.TestCase):
             ),
         ]
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """Tear down test fixtures."""
         self.patcher.stop()
 
-    def test_get_structure(self):
+    def test_get_structure(self) -> None:
         """Test get_structure method."""
         directory_rater = DirectoryRater(
-            "tests/directory_tree",
+            Path("tests/directory_tree"),
         )
         directory_rater.run(False, 1.0, quiet=True)
 
         correct_structure = [31, 7, 6, 2, 0]
         assert directory_rater.structure == correct_structure
 
-    def test_score_nodes(self):
+    def test_score_nodes(self) -> None:
         """Test score_nodes method."""
 
-    def test_run(self):
+    def test_run(self) -> None:
         """Test sungai output."""
         directory_rater = DirectoryRater(
-            "tests/directory_tree",
+            Path("tests/directory_tree"),
         )
         assert directory_rater.run(False, 0.8786859111811026, quiet=True) == 0
 
         directory_rater = DirectoryRater(
-            "tests/directory_tree",
+            Path("tests/directory_tree"),
         )
         assert directory_rater.run(False, 1.0, quiet=True) == 1
 
         # no min_score
         directory_rater = DirectoryRater(
-            "tests/directory_tree",
+            Path("tests/directory_tree"),
         )
         assert directory_rater.run(False, quiet=True) == 0
 
         # not quiet
         directory_rater = DirectoryRater(
-            "tests/directory_tree",
+            Path("tests/directory_tree"),
         )
 
         # run the following assert but without printing to stdout
         with patch('sys.stdout', new=io.StringIO()):
             assert directory_rater.run(False, 1.0) == 1
 
-    def test_get_nodes(self):
+    def test_get_nodes(self) -> None:
         """Test get_nodes method."""
         directory_rater = DirectoryRater(
-            "tests/directory_tree",
+            Path("tests/directory_tree"),
         )
         assert directory_rater.run(False, 1.0, quiet=True) == 1
         nodes = [
@@ -288,15 +288,15 @@ class TestDirectoryRater(unittest.TestCase):
             assert node[1] == sum(nodes[i])
 
         directory_rater = DirectoryRater(
-            "tests/directory_tree",
-            ignore_config="tests/.test_sungai_ignore",
+            Path("tests/directory_tree"),
+            ignore_config=Path("tests/.test_sungai_ignore"),
         )
         assert not directory_rater.get_nodes()
 
-    def test_results_message(self):
+    def test_results_message(self) -> None:
         """Test build results message."""
         directory_rater = DirectoryRater(
-            "tests/directory_tree",
+            Path("tests/directory_tree"),
         )
 
         directory_rater.suggestions = ["ABC", "DEF"]
@@ -316,7 +316,7 @@ class TestDirectoryRater(unittest.TestCase):
 class TestDirectoryRaterLimit(unittest.TestCase):
     """Test DirectoryRater's limits."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures.
 
         tests/full_tree_with_long_path{'_path/' * 100}/
@@ -331,20 +331,20 @@ class TestDirectoryRaterLimit(unittest.TestCase):
 
         self.mock_os_walk.return_value = [
             (
-                'tests/full_tree_with_long_path' + self.long_path,
+                Path('tests/full_tree_with_long_path' + self.long_path),
                 [f'blah{i}' for i in range(1, 5001)],
                 [f'{i}.cpp' for i in range(1, 20001)],
             ),
         ]
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """Tear down test fixtures."""
         self.patcher.stop()
 
-    def test_preprocess(self):
+    def test_preprocess(self) -> None:
         """Test preprocess method."""
         directory_rater = DirectoryRater(
-            "tests/full_tree_with_long_path" + self.long_path,
+            Path("tests/full_tree_with_long_path" + self.long_path),
         )
         directory_rater.preprocess()
         assert directory_rater.warnings == [
@@ -354,7 +354,7 @@ class TestDirectoryRaterLimit(unittest.TestCase):
             "tests/full_tree_with_long_path" + self.long_path,
         ]
 
-    def test_ignorable_symlink(self):
+    def test_ignorable_symlink(self) -> None:
         """Test ignorable method is_symlink condition."""
         # Mock is_symlink.
         mock_is_symlink = MagicMock()
@@ -366,14 +366,15 @@ class TestDirectoryRaterLimit(unittest.TestCase):
 
         # Test ignorable method.
         directory_rater = DirectoryRater(
-            "tests/full_tree_with_long_path" + self.long_path,
+            Path("tests/full_tree_with_long_path" + self.long_path),
         )
 
         directory_rater.ignorable(
             Path("tests/full_tree_with_long_path" + self.long_path)
         )
         assert directory_rater.warnings == [
-            "Symbolic link found in (tests/full_tree_with_long_path"
-            + self.long_path + ")"
+            "Symbolic link found in (" +
+            str(Path("tests/full_tree_with_long_path" + self.long_path)) +
+            ")"
         ]
         patcher.stop()

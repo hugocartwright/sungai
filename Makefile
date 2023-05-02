@@ -1,5 +1,5 @@
 clean:
-	rm -rf .tox sungai.egg-info .coverage dist build
+	rm -rf .tox sungai.egg-info .coverage dist build .mypy_cache
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 install:

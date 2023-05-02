@@ -3,6 +3,8 @@ Sungai.
 
 - Project URL: https://github.com/hugocartwright/sungai
 """
+from __future__ import annotations
+
 import math
 import os
 from pathlib import Path, PurePath
@@ -11,7 +13,7 @@ import gitignore_parser
 import numpy as np
 
 
-def get_r2_ln(y_values):
+def get_r2_ln(y_values: list) -> list:
     """Linear regression."""
     x_values = np.log(np.arange(1, len(y_values) + 1))
 
@@ -32,14 +34,14 @@ def get_r2_ln(y_values):
     return [slope, intercept, r_squared]
 
 
-def nested_sum(nested_list):
+def nested_sum(nested_list: list) -> int:
     """Sum of nested list."""
     return sum(
         nested_sum(x) if isinstance(x, list) else x for x in nested_list
     )
 
 
-def depth_set(nested_list, depth, value):
+def depth_set(nested_list: list, depth: int, value: list | int) -> list:
     """Set nested list to value at given depth."""
     if depth > 0:
         nested_list[0] = depth_set(nested_list[0], depth - 1, value)
@@ -51,19 +53,23 @@ def depth_set(nested_list, depth, value):
 class DirectoryRater():
     """Directory Rater."""
 
-    def __init__(self, target: Path, ignore_config: Path = None):
+    def __init__(
+        self,
+        target: Path,
+        ignore_config: Path | None = None
+    ) -> None:
         """Class constructor."""
         self.target = target
-        self.suggestions = []
-        self.nodes = []
-        self.warnings = []
-        self.structure = []
-        self.previous_dir = None
+        self.suggestions: list[str] = []
+        self.nodes: list = []
+        self.warnings: list[str] = []
+        self.structure: list = []
+        self.previous_dir: Path | None = None
         self.ignore = None
         if ignore_config is not None:
             self.ignore = gitignore_parser.parse_gitignore(ignore_config)
 
-    def get_structure(self, root: Path, files):
+    def get_structure(self, root: Path, files: list) -> None:
         """Get the directory's structure."""
         depth = len(Path(root).relative_to(Path(self.target)).parts)
         if self.previous_dir and not self.previous_dir.is_relative_to(root):
@@ -79,7 +85,12 @@ class DirectoryRater():
         self.structure = depth_set(self.structure, depth, 0)
         self.structure = depth_set(self.structure, depth, len(files))
 
-    def append_current_nodes(self, root: Path, depth, nested_structure):
+    def append_current_nodes(
+        self,
+        root: Path | None,
+        depth: int,
+        nested_structure: list,
+    ) -> tuple[list, Path | None]:
         """Append current nodes."""
         if isinstance(nested_structure[0], list):
             nested_structure[0], root = self.append_current_nodes(
@@ -87,7 +98,8 @@ class DirectoryRater():
                 depth - 1,
                 nested_structure[0],
             )
-            root = root.parents[0]
+            if root:
+                root = root.parents[0]
         if depth <= 0:
             nested_structure = [
                 sum(x) if isinstance(x, list) else x for x in nested_structure
@@ -105,10 +117,10 @@ class DirectoryRater():
 
         return nested_structure, root
 
-    def update_ignore_rules(self, root: Path, files):
+    def update_ignore_rules(self, root: Path, files: list) -> None:
         """Look for any .ignore files here and add rules."""
 
-    def ignorable(self, element: Path, category="file"):
+    def ignorable(self, element: Path, category: str = "file") -> bool:
         """Directory or file is ignorable."""
         if element.is_symlink():
             self.warnings.append(
@@ -121,7 +133,7 @@ class DirectoryRater():
             return False
         return False
 
-    def preprocess(self):
+    def preprocess(self) -> None:
         """
         Preprocess directory.
 
@@ -133,7 +145,10 @@ class DirectoryRater():
         - Allows to control traversal order when using os.walk by
             ignoring files or dirs
         """
-        for root, dirs, files in os.walk(self.target, topdown=True):
+        for root, dirs, files in os.walk(
+            self.target,
+            topdown=True,
+        ):
             # get ignore rules for root
             self.update_ignore_rules(Path(root), files)
 
@@ -175,15 +190,15 @@ class DirectoryRater():
         self.append_current_nodes(self.previous_dir, 0, self.structure)
         self.structure.sort(reverse=True)
 
-    def get_nodes(self):
+    def get_nodes(self) -> list:
         """Get nodes."""
         return self.nodes
 
-    def score_nodes(self, root_score, min_score):
+    def score_nodes(self, root_score: list, min_score: float) -> None:
         """Score nodes."""
         if min_score is not None:
             b_value = min_score - 1.0
-        else:
+        else:  # pragma: no cover
             b_value = root_score[2] - 1.0
 
         max_x = math.log(root_score[1] + 1)
@@ -195,7 +210,7 @@ class DirectoryRater():
             score = node[2] - ((a_value * math.log(node[1] + 1)) + b_value)
             self.nodes[i].append(round(score, 4))
 
-    def get_bad_nodes(self):
+    def get_bad_nodes(self) -> None:
         """Get bad nodes."""
         for node in [
             x for x in sorted(
@@ -207,14 +222,14 @@ class DirectoryRater():
                 f"Score: {node[2]:.4f} ({node[0]})"
             )
 
-    def process_nodes(self, min_score):
+    def process_nodes(self, min_score: float) -> list:
         """Process the nodes after directory traversal."""
-        root_score = self.nodes[-1]
+        root_score: list = self.nodes[-1]
         self.score_nodes(root_score, min_score)
         self.get_bad_nodes()
         return root_score
 
-    def results_message(self, root_score, verbose):
+    def results_message(self, root_score: float, verbose: bool) -> str:
         """Build results message."""
         prefix = "[sungai]"
         message = f"{prefix} Target directory: {self.target}\r\n"
@@ -233,7 +248,12 @@ class DirectoryRater():
 
         return message
 
-    def run(self, verbose=False, min_score=None, quiet=False):
+    def run(
+        self,
+        verbose: bool = False,
+        min_score: float = 0.0,
+        quiet: bool = False
+    ) -> int:
         """Run."""
         self.preprocess()
         root_score = self.process_nodes(min_score)
