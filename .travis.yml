@@ -1,4 +1,6 @@
-name: sungai CI
+stages:
+  - lint
+  - test
 
 on:
   push:
@@ -15,19 +17,15 @@ install:
   - chmod +x setup.sh
   - ./setup.sh
 
-python:
-  - 3.12-dev
-  - 3.11
-  - 3.10
-  - 3.9
 
 jobs:
   include:
     - stage: lint
-      python:
-        - 3.11
-      script:
-        - make lint
+      python: 3.11
+      script: make lint
     - stage: test
-      script:
-        - make test
+      python: "3.12-dev"
+    - python: "3.11"
+    - python: "3.10"
+    - python: "3.9"
+script: make test
