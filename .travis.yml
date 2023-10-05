@@ -15,6 +15,11 @@ install:
   - chmod +x setup.sh
   - ./setup.sh
 
+python:
+  - 3.12-dev
+  - 3.11
+  - 3.10
+  - 3.9
 
 jobs:
   include:
@@ -24,10 +29,5 @@ jobs:
       script:
         - make lint
     - stage: test
-      python:
-        - 3.12-dev
-        - 3.11
-        - 3.10
-        - 3.9
       script:
         - make test
