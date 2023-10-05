@@ -1,31 +1,38 @@
 name: sungai CI
 
-language: python
-os: linux
-dist: jammy
-
 on:
   push:
     branches: [ main, dev ]
 
+language: python
+os: linux
+dist: jammy
+
+python:
+  - 3.12-dev
+  - 3.11
+  - 3.10
+  - 3.9
+
+before_install:
+  - pip install --upgrade pip
+
+install:
+  - chmod +x setup.sh
+  - ./setup.sh
+
+script:
+  - make lint
+  - make test
+
+stage:
+  - lint
+  - test
+
 jobs:
-  include:
+  exclude:
     - stage: lint
-      python: 3.11
-      before_install:
-        - pip install --upgrade pip
-      install:
-        - chmod +x setup.sh
-        - ./setup.sh
-      script: make lint
-    - stage: test
-      runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          python-version: ['3.12-dev', '3.11', '3.10', '3.9']
-      before_install:
-        - pip install --upgrade pip
-      install:
-        - chmod +x setup.sh
-        - ./setup.sh
-      script: make test
+      python:
+        - 3.12-dev
+        - 3.11
+        - 3.10
