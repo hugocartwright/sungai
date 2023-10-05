@@ -1,5 +1,9 @@
 name: sungai CI
 
+language: python
+os: linux
+dist: jammy
+
 on:
   push:
     branches: [ main, dev ]
