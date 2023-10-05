@@ -8,12 +8,6 @@ language: python
 os: linux
 dist: jammy
 
-python:
-  - 3.12-dev
-  - 3.11
-  - 3.10
-  - 3.9
-
 before_install:
   - pip install --upgrade pip
 
@@ -21,18 +15,19 @@ install:
   - chmod +x setup.sh
   - ./setup.sh
 
-script:
-  - make lint
-  - make test
-
-stage:
-  - lint
-  - test
 
 jobs:
-  exclude:
+  include:
     - stage: lint
+      python:
+        - 3.11
+      script:
+        - make lint
+    - stage: test
       python:
         - 3.12-dev
         - 3.11
         - 3.10
+        - 3.9
+      script:
+        - make test
