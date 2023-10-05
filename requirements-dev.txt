@@ -1,8 +1,8 @@
 -r requirements.txt
 
-coverage==7.0.4
-pre-commit==2.21.0
-tox==4.2.6
-wheel==0.40.0
+coverage==7.3.2
+pre-commit==3.4.0
+tox==4.11.3
+wheel==0.41.2
 twine==4.0.2
-bumpver==2022.1120
+bumpver==2023.1127

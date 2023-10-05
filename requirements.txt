@@ -1,2 +1,2 @@
-numpy==1.24.1
-gitignore_parser==0.1.3
+numpy==1.26.0
+gitignore_parser==0.1.9
