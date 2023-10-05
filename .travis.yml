@@ -1,3 +1,5 @@
+name: sungai CI
+
 dist: jammy
 language: python
 
@@ -5,21 +7,22 @@ on:
   push:
     branches: [ main, dev ]
 
-matrix:
+jobs:
   include:
-    - python: 3.9
-    - python: 3.10
-    - python: 3.11
-    - python: 3.12-dev
-
-before_install:
-  - pip install --upgrade pip
-
-install:
-  - pip install -r requirements-dev.txt --no-cache-dir
-  - pip install sungai -e .
-  - pre-commit install
-
-script:
-  - make lint
-  - make test
+    - stage: lint
+      python: 3.9
+      script: make lint
+    - stage: test
+      matrix:
+        include:
+          - python: 3.9
+          - python: 3.10
+          - python: 3.11
+          - python: 3.12-dev
+      before_install:
+        - pip install --upgrade pip
+      install:
+        - pip install -r requirements-dev.txt --no-cache-dir
+        - pip install sungai -e .
+        - pre-commit install
+      script: make test
