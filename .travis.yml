@@ -10,7 +10,12 @@ on:
 jobs:
   include:
     - stage: lint
-      python: 3.9
+      python: 3.11
+      before_install:
+        - pip install --upgrade pip
+      install:
+        - chmod +x setup.sh
+        - ./setup.sh
       script: make lint
     - stage: test
       matrix:
@@ -22,7 +27,6 @@ jobs:
       before_install:
         - pip install --upgrade pip
       install:
-        - pip install -r requirements-dev.txt --no-cache-dir
-        - pip install sungai -e .
-        - pre-commit install
+        - chmod +x setup.sh
+        - ./setup.sh
       script: make test
